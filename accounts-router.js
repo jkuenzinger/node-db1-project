@@ -5,6 +5,8 @@ const express = require("express");
 const db = require("./data/dbConfig.js");
  
 const router = express.Router();
+
+
 //this gets all accounts
 router.get("/", (req,res) => {
     db.select()
@@ -28,40 +30,39 @@ router.get('/:id', (req,res) => {
 })
 
 //this is goin to post a new account
-router.post("/", (req,res )=>{
-    const postData=req.body;
+router.post("/", (req, res) => {
+    const postAccount = req.body;
     db("accounts")
-    .insert(postData)
-    .then(post=>{
-        res.status(201).json(post)
-    })
-    .catch(err=>{
-        res.status(500).json({message: "cannot create account"})
-    })
-})
-
+      .insert(postAccount, "id")
+      .then((ids) => {
+        const id = ids[0];
+        db("accounts")
+          .where({ id })
+          .first()
+          .then((account) => {
+            res.status(200).json({ data: account });
+          });
+      })
+      .catch((error) => {
+        res.status(500).json({ error: error.message });
+      });
+  });
 
 //here i am going to update an account by id
-
-router.put("/:id", (req,res)=>{
-    const {id}=req.params
-    const changes=req.body
-
+router.patch("/:id", (req, res) => {
+    const update = req.body;
+    const { id } = req.params;
     db("accounts")
-    .where({id})
-    .update(changes)
-    .then(count=>{
-        if(count){
-            res.json({updated:count})
-        }else{
-            res.status(200).json(count)
+      .where({ id })
+      .update(update)
+      .then((count) => {
+        if (count > 0) {
+          res.status(200).json({ message: "updated successfully" });
+        } else {
+          res.status(404).json({ message: "Unsuccessful" });
         }
-    })
-    .catch(err=>{
-        res.status(500).json({message: "cannot update "})
-    })
-
-})
+      });
+  });
 
 
 // here I am goign to delete an account by id
