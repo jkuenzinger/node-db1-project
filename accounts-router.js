@@ -28,25 +28,59 @@ router.get('/:id', (req,res) => {
 })
 
 //this is goin to post a new account
-router.post('/', (req,res) => {
-    const accountData =req.body
-    db('accounts')
-    .insert(accountData, 'id')
-    .then(ids => {
-        const id = ids[0];
-        db('accounts')
-        .where({id})
-        .first()
-        .then(account => {
-            res.status(201).json({data: account})
-        })
+router.post("/", (req,res )=>{
+    const postData=req.body;
+    db("accounts")
+    .insert(postData)
+    .then(post=>{
+        res.status(201).json(post)
     })
-    .catch(error => {
-        console.log(error)
-        res.status(500).json({error: error.message})
+    .catch(err=>{
+        res.status(500).json({message: "cannot create account"})
     })
 })
 
-//here i am going to update an account 
+
+//here i am going to update an account by id
+
+router.put("/:id", (req,res)=>{
+    const {id}=req.params
+    const changes=req.body
+
+    db("accounts")
+    .where({id})
+    .update(changes)
+    .then(count=>{
+        if(count){
+            res.json({updated:count})
+        }else{
+            res.status(200).json(count)
+        }
+    })
+    .catch(err=>{
+        res.status(500).json({message: "cannot update "})
+    })
+
+})
+
+
+// here I am goign to delete an account by id
+
+
+router.delete("/:id", (req,res)=>{
+    const {id}= req.params
+    db("accounts")
+    .where ({id})
+    .del({id})
+    .then(deleted=>{
+        res.status(200).json(deleted
+        )
+    })
+    .catch(
+        err=>{
+            res.status(500).json({message: "cannot delete"})
+        }
+    )
+})
 
 module.exports = router;
